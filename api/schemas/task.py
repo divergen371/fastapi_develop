@@ -10,15 +10,15 @@ class TaskCreate(TaskBase):
 
 
 class TaskCreateResponse(TaskCreate):
-    task_create_id: int
+    id: int
 
     class Config:
         orm_mode = True
 
 
 class Task(TaskBase):
-    task_id: int
-    done: bool = Field(False, description="完了フラグ")
+    id: int
+    done: bool = Field(default=False, description="完了フラグ")
 
     class Config:
         orm_mode = True
