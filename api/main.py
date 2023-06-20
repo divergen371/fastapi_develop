@@ -1,8 +1,11 @@
+# Third Party Library
 from fastapi import FastAPI
+
+# First Party Library
+from .routers import done, task
 
 app = FastAPI()
 
 
-@app.get(path="/hello")
-async def hello():
-    return {"message": "hello world"}
+app.include_router(router=task.router)
+app.include_router(router=done.router)
