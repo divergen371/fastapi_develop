@@ -6,7 +6,7 @@ import api.schemas.task as task_schema
 import api.cruds.tasks as task_crud
 from api.db import get_db
 
-router = APIRouter(prefix="/tasks")
+router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
 @router.get(path="", response_model=list[task_schema.Task])

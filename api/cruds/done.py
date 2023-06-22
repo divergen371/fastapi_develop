@@ -21,3 +21,8 @@ def create_done(db: Session, task_id: int) -> task_model.Done:
     db.commit()
     db.refresh(done)
     return done
+
+
+def delete_done(db: Session, original:task_model.Done) -> None:
+    db.delete(original)
+    db.commit()
