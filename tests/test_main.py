@@ -58,28 +58,18 @@ async def test_create_and_read(async_client):
 
 @pytest.mark.asyncio
 async def test_due_date(async_client):
-    response = await async_client.post(
-        "/tasks", json={"title": "Test Task", "due_date": "2024-12-01"}
-    )
-    assert response.status_code == starlette.status.HTTP_200_OK
-    response = await async_client.post(
-        "/tasks", json={"title": "Test Task", "due_date": "2024-12-40"}
-    )
-    assert (
-        response.status_code == starlette.status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
-    response = await async_client.post(
-        "/tasks", json={"title": "Test Task", "due_date": "2024/12/01"}
-    )
-    assert (
-        response.status_code == starlette.status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
-    response = await async_client.post(
-        "/tasks", json={"title": "Test Task", "due_date": "2024-1201"}
-    )
-    assert (
-        response.status_code == starlette.status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
+    input_list: list[str] = ["2024-12-01", "2024-12-32", "2024/12/01", "2024-1201"]
+    expectation_list: list[int] = [
+        starlette.status.HTTP_200_OK,
+        starlette.status.HTTP_422_UNPROCESSABLE_ENTITY,
+        starlette.status.HTTP_422_UNPROCESSABLE_ENTITY,
+        starlette.status.HTTP_422_UNPROCESSABLE_ENTITY,
+    ]
+    for input_param, expectation in zip(input_list, expectation_list):
+        response = await async_client.post(
+            "/tasks", json={"title": "Test Task", "due_date": input_param}
+        )
+        assert response.status_code == expectation
 
 
 @pytest.mark.asyncio
