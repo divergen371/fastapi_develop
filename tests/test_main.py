@@ -1,17 +1,20 @@
+# Third Party Library
 import pytest
 import pytest_asyncio
+import starlette.status
 from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 
-from api.db import get_db, Base
+# First Party Library
+from api.db import Base, get_db
 from api.main import app
 
 ASYNC_DB_URL = "sqlite+aiosqlite:///:memory"
 
 
 @pytest_asyncio.fixture
-async def asyncClient():
+async def async_client() -> AsyncClient:
     """Test Fixture テスト用DBの初期化とテスト用DBセッションの作成
     Return: AsyncClient
     """
@@ -36,3 +39,38 @@ async def asyncClient():
 
     async with AsyncClient(app=app, base_url="http://test") as client:
         yield client
+
+
+@pytest.mark.asyncio
+async def test_create_and_read(async_client):
+    response = await async_client.post("/tasks", json={"title": "Test Task"})
+    assert response.status_code == starlette.status.HTTP_200_OK
+    response_obj = response.json()
+    assert response_obj["title"] == "Test Task"
+
+    response = await async_client.get("/tasks")
+    assert response.status_code == starlette.status.HTTP_200_OK
+    response_obj = response.json()
+    assert len(response_obj) == 1
+    assert response_obj[0]["title"] == "Test Task"
+    assert response_obj[0]["done"] is False
+
+
+@pytest.mark.asyncio
+async def test_done_flag(async_client):
+    response = await async_client.post("/tasks", json={"title": "Test Task2"})
+    assert response.status_code == starlette.status.HTTP_200_OK
+    response_obj = response.json()
+    assert response_obj["title"] == "Test Task2"
+
+    response = await async_client.put("/tasks/1/done")
+    assert response.status_code == starlette.status.HTTP_200_OK
+
+    response = await async_client.put("/tasks/1/done")
+    assert response.status_code == starlette.status.HTTP_400_BAD_REQUEST
+
+    response = await async_client.delete("/tasks/1/done")
+    assert response.status_code == starlette.status.HTTP_200_OK
+
+    response = await async_client.delete("/tasks/1/done")
+    assert response.status_code == starlette.status.HTTP_404_NOT_FOUND
